@@ -12,11 +12,12 @@ export function ExportModal({ data, onClose }: { data: AdminData; onClose: () =>
   const { snap, streetOrder } = data;
   const [filled, setFilled] = useState(false);
   const [street, setStreet] = useState('ALL');
+  const [mask, setMask] = useState(true);
   const [busy, setBusy] = useState(false);
 
   const model = useMemo(
-    () => buildReport(snap!.properties, snap!.payments, snap!.settings, streetOrder, { filled, street }),
-    [snap, streetOrder, filled, street],
+    () => buildReport(snap!.properties, snap!.payments, snap!.settings, streetOrder, { filled, street, maskPhones: mask }),
+    [snap, streetOrder, filled, street, mask],
   );
   if (!snap) return null;
 
@@ -62,14 +63,15 @@ export function ExportModal({ data, onClose }: { data: AdminData; onClose: () =>
               <option value={UNSPECIFIED_STREET}>{UNSPECIFIED_STREET}</option>
             </select>
           </label>
+          <label className="flex items-center gap-2 text-sm font-bold text-slate-700"><input type="checkbox" checked={mask} onChange={(e) => setMask(e.target.checked)} className="h-4 w-4" />Hide phone numbers (0803***951)</label>
           <span className="text-sm text-slate-600">{count} entries in {model.sections.length} sections</span>
           <div className="ml-auto flex flex-wrap gap-2">
             <button onClick={() => void toWord()} disabled={busy} className="inline-flex items-center gap-2 rounded-xl bg-blue-700 px-4 py-2.5 text-sm font-bold text-white hover:bg-blue-600 disabled:opacity-60"><FileText className="h-4 w-4" />{busy ? 'Preparing…' : 'Download Word (.docx)'}</button>
             <button onClick={() => window.print()} className="inline-flex items-center gap-2 rounded-xl bg-amber-400 px-4 py-2.5 text-sm font-extrabold text-slate-950 hover:bg-amber-300"><Printer className="h-4 w-4" />Print / Save as PDF</button>
-            <button onClick={() => download(`${base}.csv`, buildCsv(snap.properties, snap.payments, snap.settings, streetOrder, street))} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-500"><FileSpreadsheet className="h-4 w-4" />Excel (.csv)</button>
+            <button onClick={() => download(`${base}.csv`, buildCsv(snap.properties, snap.payments, snap.settings, streetOrder, street, mask))} className="inline-flex items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-500"><FileSpreadsheet className="h-4 w-4" />Excel (.csv)</button>
           </div>
         </div>
-        <p className="flex items-center gap-1.5 text-xs text-slate-500"><Download className="h-3.5 w-3.5" /> For PDF choose “Save as PDF” in the print window, landscape, margins “Default”. Full phone numbers appear on these forms — keep them for admins only.</p>
+        <p className="flex items-center gap-1.5 text-xs text-slate-500"><Download className="h-3.5 w-3.5" /> For PDF choose “Save as PDF” in the print window, landscape, margins “Default”. Phone numbers are hidden by default; untick the box to include full numbers (admins only).</p>
       </div>
       <div className="preview bg-slate-200 p-4">
         <div className="mx-auto max-w-[1200px] bg-white p-4 shadow"><ReportSheet model={model} /></div>

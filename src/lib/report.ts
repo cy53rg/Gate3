@@ -1,7 +1,7 @@
 import { CATEGORY_ORDER, MONTHS, NO_VALUE, UNSPECIFIED_STREET } from '../constants';
 import type { Category, PaymentIndex, Property, Settings } from '../types';
 import { dueLines, paidAmount } from './dues';
-import { addressOf, compareProps, displayName, naira, num } from './format';
+import { addressOf, compareProps, displayName, maskPhone, naira, num } from './format';
 
 /**
  * ONE report model feeds the on-screen/print sheet, the Word file and the CSV,
@@ -67,6 +67,8 @@ export interface ReportOptions {
   filled: boolean;
   /** 'ALL' or a street name */
   street: string;
+  /** default true: show 0803***951 instead of the full number */
+  maskPhones?: boolean;
 }
 
 const MONTH_W = 500;
@@ -180,7 +182,7 @@ export function buildReport(
             no: String(no),
             name: displayName(p) !== p.name ? NO_VALUE : p.name,
             address: addressOf(p),
-            phone: p.phone || NO_VALUE,
+            phone: opts.maskPhones === false ? (p.phone || NO_VALUE) : maskPhone(p.phone),
             due: num(l.due),
             annual: num(l.due * 12),
           };
